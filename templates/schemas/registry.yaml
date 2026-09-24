@@ -8,7 +8,7 @@ schemas:
   - name: spec-large-self
     label: 大项目模式
     hint: 我要做一个完整的产品——多模块、总设计+模块细化、含设计/任务双评审门禁
-    version: 2
+    version: 3
     default: true
 
   # ── 扩展口子（未实现；追加即扩展）──

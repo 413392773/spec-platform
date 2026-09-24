@@ -19,7 +19,7 @@ test('getMode 未知模式返回 undefined', () => {
 
 test('getMasterVersion 读取母本 schema.yaml 版本并与注册表一致', () => {
   const info = getMasterVersion('spec-large-self');
-  assert.equal(info.version, 2);
+  assert.equal(info.version, 3);
   assert.equal(info.matchesRegistry, true);
 });
 

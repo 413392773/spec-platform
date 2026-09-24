@@ -72,10 +72,10 @@ test('create 完整走五步脚手架并记录 schema 版本', async () => {
 
   // 版本钩子：记录 schemaVersion
   assert.equal(record.mode, 'spec-large-self');
-  assert.equal(record.schemaVersion, 2);
+  assert.equal(record.schemaVersion, 3);
   assert.ok(record.createdAt);
   const projects = await listProjects();
-  assert.ok(projects.some((p) => p.path === dir && p.schemaVersion === 2));
+  assert.ok(projects.some((p) => p.path === dir && p.schemaVersion === 3));
 
   await rm(parent, { recursive: true, force: true });
 });
