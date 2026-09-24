@@ -7,6 +7,7 @@ import { getWebDistDir } from '../lib/paths.js';
 import { listModes } from '../services/registryService.js';
 import { create, listProjects } from '../services/projectService.js';
 import { run } from '../services/openspecService.js';
+import { launch, getJob, listJobsFor } from '../services/aiRunService.js';
 import { resolveStaticPath, contentTypeFor } from '../services/staticService.js';
 
 const MAX_BODY_BYTES = 1024 * 1024;
@@ -117,7 +118,8 @@ async function serveWebAsset(req, res, pathname) {
 
 /** 统一 API 信封：{success, data} / {success:false, error}；API 一律挂 /api 前缀 */
 export async function handleRequest(req, res) {
-  const pathname = new URL(req.url, 'http://localhost').pathname;
+  const url = new URL(req.url, 'http://localhost');
+  const pathname = url.pathname;
   try {
     if (!isHostAllowed(req)) {
       sendJson(res, 421, { success: false, error: 'Host 不被允许' });
@@ -163,6 +165,31 @@ export async function handleRequest(req, res) {
       const body = await readJsonBody(req);
       const result = await run(body?.path, body?.args);
       sendJson(res, 200, { success: true, data: result });
+      return;
+    }
+    if (route === 'POST /projects/airun') {
+      const body = await readJsonBody(req);
+      const job = await launch(body?.path, body?.command, body?.input ?? '');
+      sendJson(res, 202, { success: true, data: job });
+      return;
+    }
+    if (route === 'GET /projects/airun') {
+      const projectPath = url.searchParams.get('path');
+      if (!projectPath) {
+        throw new ValidationError('path 查询参数必填');
+      }
+      sendJson(res, 200, { success: true, data: { jobs: listJobsFor(projectPath) } });
+      return;
+    }
+    if (route.startsWith('GET /airun/')) {
+      const id = pathname.slice(`${API_PREFIX}/airun/`.length);
+      const offset = Number(url.searchParams.get('offset') ?? 0) || 0;
+      const job = getJob(id, offset);
+      if (!job) {
+        sendJson(res, 404, { success: false, error: `AI 任务不存在: ${id}` });
+        return;
+      }
+      sendJson(res, 200, { success: true, data: job });
       return;
     }
     sendJson(res, 404, { success: false, error: `路由不存在: ${route}` });

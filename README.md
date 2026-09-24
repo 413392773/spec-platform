@@ -24,10 +24,10 @@ cd web && npm run dev    # 终端 2：Vite :5173，/api 自动代理到 :3000
 ## 测试
 
 ```bash
-npm test                 # 后端 node:test（33 用例）
-npm run test:web         # 前端 vitest（38 用例）
-npm run test:coverage    # 后端覆盖率（86% 行）
-cd web && npm run test:coverage  # 前端覆盖率（96% 行）
+npm test                 # 后端 node:test（52 用例）
+npm run test:web         # 前端 vitest（50 用例）
+npm run test:coverage    # 后端覆盖率（88% 行）
+cd web && npm run test:coverage  # 前端覆盖率（93% 行）
 ```
 
 ## HTTP API（一律 `/api` 前缀）
@@ -38,7 +38,10 @@ cd web && npm run test:coverage  # 前端覆盖率（96% 行）
 | GET | `/api/schemas` | 模式注册表（供前端模式选择页） |
 | POST | `/api/projects` | 创建项目（五步脚手架，fail-fast + 回滚） |
 | GET | `/api/projects` | 已创建项目记录（含 schema 版本） |
-| POST | `/api/projects/run` | cliRun：代理执行 openspec 只读/管理命令（白名单） |
+| POST | `/api/projects/run` | cliRun：代理执行 openspec 命令（白名单，同步） |
+| POST | `/api/projects/airun` | aiRun：启动 AI 工作流（`/opsx:*`，异步 job），202 返回 job |
+| GET | `/api/airun/<id>?offset=n` | job 快照 + offset 之后的增量输出（前端轮询） |
+| GET | `/api/projects/airun?path=` | 某项目的 job 列表（刷新页面后恢复运行中任务） |
 
 非 `/api` 的 GET/HEAD 请求由后端托管 `web/dist` 静态资源；无扩展名路径未命中文件时回退
 `index.html`（SPA 前端路由），带扩展名的资源未命中直接 404；
@@ -75,8 +78,31 @@ cd web && npm run test:coverage  # 前端覆盖率（96% 行）
 { "path": "/absolute/path/to/my-app", "args": ["list"] }
 ```
 
-白名单：`list / view / doctor / context / archive / change / spec / schema`。
-AI 工作流（propose/apply 等 `/opsx:*`）属 aiRun 通道，尚未实现。
+cliRun 白名单：`list / view / doctor / context / archive / change / spec / schema`。
+`init/store/config/update` 等改变平台或全局状态的命令一律禁止。
+
+### aiRun 通道（AI 工作流）
+
+`/opsx:*` 不是可执行命令，而是 openspec init 生成的 11 个提示词文件，需由 AI agent
+解释执行。平台在项目目录 spawn `claude -p "/opsx:<命令> <需求>"` 无头跑完整个工作流：
+
+- **白名单**：propose / apply / archive / bulk-archive / continue / explore / ff /
+  new / onboard / sync / verify（全部 11 个）
+- **项目准入**：只有通过平台创建（登记表内）且含 `openspec/config.yaml` 的项目可用；
+  路径经 realpath 归一，家目录及其祖先一律拒绝
+- **job 模型**：内存态（服务重启即失），同项目同时只允许一个运行中任务（冲突 409），
+  全局并发上限 2；输出按字符计数上限 100 万（超限保尾部一半，落后客户端会收到
+  `gapChars` 截断提示）；完成态 job 只保留最近 50 个；30 分钟超时按进程组 SIGKILL
+- **权限**：`--permission-mode acceptEdits` + 收紧的 `--allowedTools`
+  （`Bash(openspec:*)`、git 只读/暂存子命令 status/diff/log/show/add，与
+  Read/Edit/Write/Glob/Grep），并显式 `--disallowedTools` 拒绝
+  `git config/push/remote/commit`；**不使用** `--dangerously-skip-permissions`
+- **风险须知**：AI 会读写项目文件。acceptEdits + Write 意味着项目内不可信内容
+  （如恶意 README）理论上可诱导 AI 写入 `.claude/settings.json` 等提权文件，
+  再被后续会话加载——**不要对包含不可信第三方内容的项目使用 aiRun**（前端也有同样提示）。
+  平台进程退出（SIGINT/SIGTERM）时会杀掉全部运行中的 claude 进程组，不留孤儿。
+- **前置条件**：本机已安装并登录 Claude Code CLI（`claude`）
+- 前端在项目卡片提供命令下拉 + 需求输入 + 增量输出轮询（1.5s，链式请求不并发在飞）
 
 ## 目录
 

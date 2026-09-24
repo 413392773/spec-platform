@@ -75,3 +75,17 @@ export async function listProjects() {
 export function runCommand(path, args) {
   return postJson('/api/projects/run', { path, args });
 }
+
+export function startAiRun(path, command, input) {
+  return postJson('/api/projects/airun', { path, command, input });
+}
+
+export function getAiRun(id, offset = 0) {
+  const safeOffset = Number(offset) || 0; // 调用方传脏值也不拼进 URL
+  return request(`/api/airun/${encodeURIComponent(id)}?offset=${safeOffset}`);
+}
+
+export async function listAiRuns(path) {
+  const data = await request(`/api/projects/airun?path=${encodeURIComponent(path)}`);
+  return data.jobs;
+}

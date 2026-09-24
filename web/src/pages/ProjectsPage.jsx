@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { listProjects } from '../api/client.js';
 import { useAsyncData } from '../hooks/useAsyncData.js';
 import RunPanel from '../components/RunPanel.jsx';
+import AiPanel from '../components/AiPanel.jsx';
 
 export default function ProjectsPage() {
   const { data: projects, error, isPending } = useAsyncData(listProjects);
@@ -26,6 +27,7 @@ export default function ProjectsPage() {
             </p>
             <p className="hint">{project.path}</p>
             <RunPanel projectPath={project.path} />
+            <AiPanel projectPath={project.path} />
           </div>
         ))}
       </div>

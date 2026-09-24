@@ -8,6 +8,10 @@ import { listProjects, runCommand } from '../api/client.js';
 vi.mock('../api/client.js', () => ({
   listProjects: vi.fn(),
   runCommand: vi.fn(),
+  // AiPanel 挂载即调用（恢复运行中任务），默认无任务
+  listAiRuns: vi.fn().mockResolvedValue([]),
+  startAiRun: vi.fn(),
+  getAiRun: vi.fn(),
 }));
 
 const PROJECTS = [

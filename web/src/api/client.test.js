@@ -6,6 +6,9 @@ import {
   createProject,
   listProjects,
   runCommand,
+  startAiRun,
+  getAiRun,
+  listAiRuns,
 } from './client.js';
 
 function mockResponse(status, body) {
@@ -83,6 +86,45 @@ describe('API 客户端', () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ path: '/tmp/demo', args: ['schema', 'which'] }),
     });
+  });
+
+  it('startAiRun 以 JSON POST 命令与需求，返回 job', async () => {
+    const job = { id: 'job-1', command: 'propose', status: 'running' };
+    fetch.mockResolvedValue({
+      ok: true,
+      status: 202,
+      json: () => Promise.resolve({ success: true, data: job }),
+    });
+    await expect(startAiRun('/tmp/demo', 'propose', '加个登录')).resolves.toEqual(job);
+    expect(fetch).toHaveBeenCalledWith('/api/projects/airun', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ path: '/tmp/demo', command: 'propose', input: '加个登录' }),
+    });
+  });
+
+  it('getAiRun 带 id 与 offset 查询增量输出', async () => {
+    const snapshot = { id: 'job-1', status: 'running', output: 'AAA', nextOffset: 3 };
+    fetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ success: true, data: snapshot }),
+    });
+    await expect(getAiRun('job-1', 0)).resolves.toEqual(snapshot);
+    expect(fetch).toHaveBeenCalledWith('/api/airun/job-1?offset=0', undefined);
+  });
+
+  it('listAiRuns 返回项目 job 列表', async () => {
+    fetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ success: true, data: { jobs: [] } }),
+    });
+    await expect(listAiRuns('/tmp/demo')).resolves.toEqual([]);
+    expect(fetch).toHaveBeenCalledWith(
+      `/api/projects/airun?path=${encodeURIComponent('/tmp/demo')}`,
+      undefined,
+    );
   });
 
   it('400 → ApiError，消息带填写检查提示', async () => {

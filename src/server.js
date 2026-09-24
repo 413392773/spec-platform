@@ -1,6 +1,7 @@
 import { createServer as createHttpServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
 import { handleRequest, sendJson } from './routes/router.js';
+import { killAllRunning } from './services/aiRunService.js';
 
 const DEFAULT_PORT = 3000;
 
@@ -25,4 +26,12 @@ if (invokedDirectly) {
   createServer().listen(port, host, () => {
     console.log(`spec-platform 监听 http://${host}:${port}`);
   });
+
+  // 平台退出前清理运行中的 claude 进程组，不留带写权限的孤儿 AI 进程
+  for (const signal of ['SIGINT', 'SIGTERM']) {
+    process.on(signal, () => {
+      killAllRunning();
+      process.exit(0);
+    });
+  }
 }

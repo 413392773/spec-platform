@@ -137,3 +137,41 @@ test('POST /api/projects 拒绝根目录 path="/"（防误在 / 上 git init）'
   assert.equal(body.success, false);
   assert.match(body.error, /根目录/);
 });
+
+test('POST /api/projects/airun 非白名单命令返回 400', async () => {
+  const res = await postJson('/api/projects/airun', {
+    path: SOFT_EXAM,
+    command: 'rm-rf',
+    input: '',
+  });
+  assert.equal(res.status, 400);
+  const body = await res.json();
+  assert.match(body.error, /白名单/);
+});
+
+test('POST /api/projects/airun 非 openspec 项目路径返回 400', async () => {
+  const res = await postJson('/api/projects/airun', {
+    path: '/tmp',
+    command: 'propose',
+    input: '',
+  });
+  assert.equal(res.status, 400);
+  const body = await res.json();
+  assert.equal(body.success, false);
+});
+
+test('GET /api/airun/<未知id> 返回 404', async () => {
+  const res = await fetch(`${base}/api/airun/no-such-id`);
+  assert.equal(res.status, 404);
+  const body = await res.json();
+  assert.equal(body.success, false);
+});
+
+test('GET /api/projects/airun 缺 path 参数 400；带 path 返回空列表', async () => {
+  const bad = await fetch(`${base}/api/projects/airun`);
+  assert.equal(bad.status, 400);
+  const ok = await fetch(`${base}/api/projects/airun?path=${encodeURIComponent('/tmp/other')}`);
+  assert.equal(ok.status, 200);
+  const body = await ok.json();
+  assert.deepEqual(body.data.jobs, []);
+});
