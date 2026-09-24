@@ -21,14 +21,17 @@ const MAX_CONCURRENT_JOBS = 2; // 全局并发上限：防烧 API 额度/打满 
 const MAX_FINISHED_JOBS = 50; // 完成态 job 保留上限，launch 时顺手淘汰
 
 /**
- * 作用域工具白名单：openspec 全量 + git 只读/暂存子命令 + 常规读写编辑。
+ * 作用域工具白名单：openspec 全量 + git 只读/暂存子命令 + 常规读写编辑
+ * + Agent（schema 内置的多子 agent 并行评审与 apply 并行执行）
+ * + Skill（apply/子 agent 强制调用 test-driven-development 技能）。
  * git config/push/remote/commit 不在允许面（提示词注入的经典升级路径），
- * 并再显式 --disallowedTools 拒绝一层。不使用 dangerously-skip-permissions。
+ * 并再显式 --disallowedTools 拒绝一层；Agent 子代理继承同一 allowed/disallowed 面。
+ * 不使用 dangerously-skip-permissions。
  */
 const ALLOWED_TOOLS = [
   'Bash(openspec:*)', 'Bash(git status:*)', 'Bash(git diff:*)',
   'Bash(git log:*)', 'Bash(git show:*)', 'Bash(git add:*)',
-  'Read', 'Edit', 'Write', 'Glob', 'Grep',
+  'Read', 'Edit', 'Write', 'Glob', 'Grep', 'Agent', 'Skill',
 ];
 const DISALLOWED_TOOLS = [
   'Bash(git config:*)', 'Bash(git push:*)', 'Bash(git remote:*)', 'Bash(git commit:*)',

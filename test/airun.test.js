@@ -135,6 +135,13 @@ test('launch 以 claude -p 斜杠命令启动：权限旗标收紧，git 危险�
   assert.ok(lastSpawn.args.includes('--permission-mode'));
   assert.ok(lastSpawn.args.includes('acceptEdits'));
   assert.ok(!lastSpawn.args.some((a) => a.includes('dangerously-skip')));
+  // 白名单必须含 Agent/Skill：schema 的 design-review/tasks-review/apply
+  // 指令依赖子 agent 并行与 TDD 技能调用（无头模式下不在白名单即不可用）
+  const allowIdx = lastSpawn.args.indexOf('--allowedTools');
+  assert.ok(allowIdx > -1);
+  const allowed = lastSpawn.args.slice(allowIdx + 1, lastSpawn.args.indexOf('--disallowedTools'));
+  assert.ok(allowed.includes('Agent'), '缺少 Agent 工具');
+  assert.ok(allowed.includes('Skill'), '缺少 Skill 工具');
   // 不再放开全量 git；显式拒绝 config/push/remote/commit
   assert.ok(!lastSpawn.args.includes('Bash(git:*)'));
   const disallowIdx = lastSpawn.args.indexOf('--disallowedTools');
