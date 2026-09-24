@@ -1,4 +1,7 @@
 node_modules/
 data/
+coverage/
+web/dist/
+.env.local
 *.log
 .DS_Store

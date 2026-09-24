@@ -13,6 +13,7 @@ import {
 } from './registryService.js';
 import { run as runOpenspec } from './openspecService.js';
 
+// 与 web/src/validation.js 的 NAME_RE 保持一致：前端管即时提示，这里是权威校验
 const NAME_RE = /^[a-z0-9][a-z0-9-]*$/;
 const INIT_TOOLS = 'claude';
 
@@ -24,8 +25,8 @@ function validateForm(form) {
   if (typeof form.name !== 'string' || !NAME_RE.test(form.name)) {
     errors.push('name 必填且须为 kebab-case（小写字母/数字/中划线）');
   }
-  if (typeof form.path !== 'string' || !isAbsolute(form.path)) {
-    errors.push('path 必须是绝对路径');
+  if (typeof form.path !== 'string' || !isAbsolute(form.path) || form.path === '/') {
+    errors.push('path 必须是绝对路径（且不能是根目录 /）');
   }
   if (typeof form.mode !== 'string' || form.mode.length === 0) {
     errors.push('mode 必填（见 GET /schemas）');
@@ -144,6 +145,8 @@ export async function create(form) {
   }
 
   const createdArtifacts = []; // 回滚台账：只删登记过的产物
+  // init 之前先记住哪些目录是用户既有的——既有的永远不进台账（回滚只删本次新建的）
+  const claudeDirExisted = existsSync(join(rootPath, '.claude'));
   try {
     // ── 步骤1：目录 + 强制 git ──
     const rootExisted = existsSync(rootPath);
@@ -164,7 +167,7 @@ export async function create(form) {
       throw new EnvError(`openspec init 失败: ${(init.stderr || init.stdout).trim()}`);
     }
     createdArtifacts.push(join(rootPath, 'openspec'));
-    if (existsSync(join(rootPath, '.claude'))) {
+    if (!claudeDirExisted && existsSync(join(rootPath, '.claude'))) {
       createdArtifacts.push(join(rootPath, '.claude'));
     }
 

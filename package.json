@@ -8,8 +8,10 @@
   },
   "scripts": {
     "start": "node src/server.js",
+    "build:web": "npm --prefix web run build",
     "test": "node --test test/*.test.js",
-    "test:coverage": "node --test --experimental-test-coverage test/*.test.js"
+    "test:coverage": "node --test --experimental-test-coverage test/*.test.js",
+    "test:web": "npm --prefix web run test"
   },
   "dependencies": {
     "yaml": "^2.5.0"

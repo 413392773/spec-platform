@@ -1,0 +1,95 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, 'PingFang SC', sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+
+.app { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #ddd3;
+}
+.topbar nav { display: flex; gap: 16px; }
+.brand { font-weight: 700; font-size: 18px; text-decoration: none; color: inherit; }
+a { color: #0b6bcb; }
+
+main { padding: 24px 0; }
+
+/* 卡片与表单基础样式（FE-3/FE-4 使用） */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.card {
+  border: 1px solid #ddd6;
+  border-radius: 12px;
+  padding: 16px;
+  background: #8881;
+}
+.card h3 { margin: 0 0 8px; }
+
+.btn {
+  display: inline-block;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 14px;
+  cursor: pointer;
+  background: #0b6bcb;
+  color: #fff;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.secondary { background: #8884; }
+
+.field { margin-bottom: 16px; }
+.field label { display: block; margin-bottom: 6px; font-weight: 600; }
+.field input, .field textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ddd8;
+  border-radius: 8px;
+  font: inherit;
+}
+.field .hint { margin-top: 4px; font-size: 12px; color: #888; }
+.field .error-text { margin-top: 4px; font-size: 12px; color: #d33; }
+
+.banner { padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; }
+.banner.error { background: #d332; color: #d33; }
+.banner.ok { background: #0a32; color: #0a3; }
+
+pre.output {
+  background: #1115;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+.badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #0b6bcb22;
+  color: #0b6bcb;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.row .btn { flex-shrink: 0; }
+.row input { flex: 1; min-width: 140px; }
+
+.badge.danger { background: #d332; color: #d33; }
+
+.link-btn {
+  border: none;
+  background: none;
+  color: #d33;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0 4px;
+}

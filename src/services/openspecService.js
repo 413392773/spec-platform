@@ -4,7 +4,9 @@ import { runCommand } from '../lib/runCommand.js';
 import { ValidationError } from '../lib/errors.js';
 
 /**
- * cliRun 白名单：只代理只读/管理类命令。
+ * cliRun 白名单。
+ * 只读：list / view / doctor / context / schema
+ * 会写入目标项目（设计如此，由用户按钮显式触发）：archive / change / spec
  * init/store/config/update 等改变平台或全局状态的命令一律禁止。
  */
 export const ALLOWED_COMMANDS = new Set([
