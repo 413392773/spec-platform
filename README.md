@@ -96,8 +96,10 @@ cliRun 白名单：`list / view / doctor / context / archive / change / spec / s
   全局并发上限 2；输出按字符计数上限 100 万（超限保尾部一半，落后客户端会收到
   `gapChars` 截断提示）；完成态 job 只保留最近 50 个；30 分钟超时按进程组 SIGKILL
 - **权限**：`--permission-mode acceptEdits` + 收紧的 `--allowedTools`
-  （`Bash(openspec:*)`、git 只读/暂存子命令 status/diff/log/show/add，与
-  Read/Edit/Write/Glob/Grep），并显式 `--disallowedTools` 拒绝
+  （`Bash(openspec:*)`、git 只读/暂存子命令 status/diff/log/show/add，
+  Read/Edit/Write/Glob/Grep，以及 Agent/Skill——schema 内置的多子 agent
+  并行评审、apply 同阶段模块并行执行与 TDD 技能调用依赖这两项；
+  子代理继承同一工具面，不扩大文件写入范围），并显式 `--disallowedTools` 拒绝
   `git config/push/remote/commit`；**不使用** `--dangerously-skip-permissions`
 - **风险须知**：AI 会读写项目文件。acceptEdits + Write 意味着项目内不可信内容
   （如恶意 README）理论上可诱导 AI 写入 `.claude/settings.json` 等提权文件，
