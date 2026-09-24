@@ -1,0 +1,22 @@
+# Schema 模式注册表（平台核心资产索引）
+#
+# 新增模式：templates/schemas/ 下放母本目录 + 本文件加一行即可，
+# 脚手架流程与模式无关（见 ../../docs/openspec-scaffold-flow.md §4）。
+# version 必须与母本 schema.yaml 的 version 保持一致（registryService 启动时校验）。
+
+schemas:
+  - name: spec-large-self
+    label: 大项目模式
+    hint: 我要做一个完整的产品——多模块、总设计+模块细化、含设计/任务双评审门禁
+    version: 2
+    default: true
+
+  # ── 扩展口子（未实现；追加即扩展）──
+  # - name: spec-small
+  #   label: 小改动模式
+  #   hint: 我只想加个小功能或改一处逻辑
+  #   version: 1
+  # - name: spec-bugfix
+  #   label: 修 bug 模式
+  #   hint: 有个问题要修掉
+  #   version: 1

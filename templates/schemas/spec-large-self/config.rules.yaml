@@ -1,0 +1,39 @@
+# spec-large-self 默认 rules 模板（config.rules.yaml）
+#
+# 用途：平台脚手架（流程文档步骤 4）生成项目 config.yaml 时，
+#       以本文件作为 rules 的出厂默认值；建项目向导收集的项目特有
+#       rules 在此基础上追加/覆盖。
+# 注意：openspec CLI 不读取本文件——运行时生效的唯一来源始终是
+#       项目自己的 openspec/config.yaml。
+# 同步纪律：修改本文件必须同时递增 schema.yaml 的 version；
+#       老项目升级时做三方合并（母本旧版 / 母本新版 / 项目当前），
+#       不得无脑覆盖项目个性化 rules。
+# 来源：2026-09-24 自 soft-exam/openspec/config.yaml 的 rules 块抽取，
+#       并做两处通用化（去掉"学习项目"着色、验证命令示例适配构建工具）。
+
+rules:
+  proposal:
+    - 必须包含"非目标（Non-goals）"章节，明确本次不做什么
+    - 必须包含"作用范围"章节：列出受影响的模块/包，以及明确不动的部分
+    - 保持 1-2 页以内，聚焦"为什么"而非"怎么做"
+  specs:
+    - 每个 Requirement 至少配一个场景（Given/When/Then 格式）
+    - 场景必须覆盖正常、边界、异常三类中至少两类
+  design:
+    - 技术决策必须给出 2-3 个备选方案和取舍理由
+    - 涉及新依赖时必须说明版本和引入必要性
+    - 只写全局内容（架构/模块边界/跨模块契约/公共数据模型/横切规范），
+      单模块内部细节留给 design/<模块>.md
+  module-designs:
+    - 跨模块接口只引用 design.md 的契约，不得重复定义或私自更改
+    - 测试要点必须覆盖对应模块 spec.md 的全部 Requirement 场景
+  tasks:
+    - 只放执行顺序总览表和模块级 checkbox，不写任务明细
+    - 阶段号直接采用 design.md 的执行顺序编号（串行递增、并行共用同一编号，
+      形如 1-2-2-3）：阶段1 固定为 common-core（串行），编号最大阶段固定为
+      integration（串行），中间功能模块同编号者互为并行
+  module-tasks:
+    - 每个任务粒度不超过 2 小时
+    - 每个任务必须附带验证命令（按项目构建工具适配，
+      如 ./mvnw test -Dtest=XxxTest 或 npm test -- Xxx）
+    - 接口和实现放在同一个任务中，避免编译中断

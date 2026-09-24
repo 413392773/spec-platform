@@ -1,0 +1,17 @@
+{
+  "name": "spec-platform",
+  "version": "0.1.0",
+  "description": "小白开发平台后端：OpenSpec 脚手架 + cliRun 命令代理 + schema 母本管理",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage test/*.test.js"
+  },
+  "dependencies": {
+    "yaml": "^2.5.0"
+  }
+}
