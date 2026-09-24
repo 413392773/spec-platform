@@ -24,9 +24,10 @@ spec-platform 的 `spec-large-self` schema 已有"同编号模块互为并行"�
 ## 关键事实（探索发现）
 
 平台 aiRun 通过 `claude -p` 无头执行，`--allowedTools` 白名单
-（`src/services/aiRunService.js`）**不含 `Agent` 工具**。schema 中 design-review、
-tasks-review 已写有"用 Agent 工具并行启动子 agent"的指令，在当前白名单下实际无法
-生效。本次改动必须把 `Agent` 加入白名单，同时修复该存量问题。
+（`src/services/aiRunService.js`）**不含 `Agent` 与 `Skill` 工具**。schema 中
+design-review、tasks-review 已写有"用 Agent 工具并行启动子 agent"、apply 已写有
+"用 Skill 工具调用 test-driven-development 技能"的指令，在当前白名单下实际无法
+生效。本次改动必须把这两个工具加入白名单，同时修复该存量问题。
 
 ## 改动范围
 
@@ -76,17 +77,24 @@ v2 留档已存在于 `templates/schemas/versions/spec-large-self/v2/`，符合�
 
 ### 2. 平台后端
 
-**`src/services/aiRunService.js`**：`ALLOWED_TOOLS` 数组增加 `'Agent'`。
+**`src/services/aiRunService.js`**：`ALLOWED_TOOLS` 数组增加 `'Agent'` 与 `'Skill'`。
+
+- `Agent`：子 agent 并行的前提（design-review / tasks-review / 本次 apply 并行都依赖）。
+- `Skill`：存量同类问题——apply 第 1 步指令要求"用 Skill 工具调用 superpowers
+  `test-driven-development` 技能"，子 agent 提示词同样要求强制 TDD 技能，
+  但当前白名单不含 `Skill`，无头模式下该指令不可执行。并行子 agent 每个都要走
+  TDD，此项为硬依赖。
+
 `DISALLOWED_TOOLS` 不变（Agent 子代理继承会话的 allowed/disallowed 面，
-`git config/push/remote/commit` 依旧被拒）。不新增其他工具。
+`git config/push/remote/commit` 依旧被拒）。除上述两项外不新增其他工具。
 
 ### 3. 测试与文档
 
-- `test/airun.test.js`：断言 spawn 参数的 `--allowedTools` 含 `Agent`。
+- `test/airun.test.js`：断言 spawn 参数的 `--allowedTools` 含 `Agent` 与 `Skill`。
 - 涉及母本版本/内容的既有测试（如 upgrade、registryService 相关）按 v3 更新断言。
-- `README.md` aiRun 章节：白名单说明补充 `Agent`（用于 schema 内置的多子 agent
-  并行评审与 apply 并行执行）；"风险须知"段落不变（Agent 不扩大文件写入面，
-  子代理受同一 allowed/disallowed 约束）。
+- `README.md` aiRun 章节：白名单说明补充 `Agent` 与 `Skill`（用于 schema 内置的
+  多子 agent 并行评审、apply 并行执行与 TDD 技能调用）；"风险须知"段落不变
+  （二者不扩大文件写入面，子代理受同一 allowed/disallowed 约束）。
 
 ## 明确不做（YAGNI）
 
