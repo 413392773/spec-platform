@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ProjectsPage from './ProjectsPage.jsx';
-import { listProjects, runCommand } from '../api/client.js';
+import { listProjects, runCommand, previewUpgrade } from '../api/client.js';
 
 vi.mock('../api/client.js', () => ({
   listProjects: vi.fn(),
@@ -12,6 +12,9 @@ vi.mock('../api/client.js', () => ({
   listAiRuns: vi.fn().mockResolvedValue([]),
   startAiRun: vi.fn(),
   getAiRun: vi.fn(),
+  // UpgradePanel 仅在点击检查时调用
+  previewUpgrade: vi.fn(),
+  applyUpgrade: vi.fn(),
 }));
 
 const PROJECTS = [
@@ -86,5 +89,22 @@ describe('ProjectsPage 项目列表', () => {
     renderPage();
     await user.click(await screen.findByRole('button', { name: 'Schema 来源' }));
     expect(await screen.findByText(/不是有效的 openspec 项目/)).toBeTruthy();
+  });
+
+  it('卡片带 schema 升级面板：检查后显示版本状态', async () => {
+    listProjects.mockResolvedValue(PROJECTS);
+    previewUpgrade.mockResolvedValue({
+      upgradable: false,
+      mode: 'spec-large-self',
+      currentVersion: 2,
+      latestVersion: 2,
+      files: [],
+      summary: {},
+    });
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole('button', { name: '检查 schema 升级' }));
+    expect(await screen.findByText(/已是最新/)).toBeTruthy();
+    expect(previewUpgrade).toHaveBeenCalledWith('/tmp/demo-app');
   });
 });

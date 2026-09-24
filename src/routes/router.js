@@ -8,6 +8,7 @@ import { listModes } from '../services/registryService.js';
 import { create, listProjects } from '../services/projectService.js';
 import { run } from '../services/openspecService.js';
 import { launch, getJob, listJobsFor } from '../services/aiRunService.js';
+import { previewUpgrade, applyUpgrade } from '../services/upgradeService.js';
 import { resolveStaticPath, contentTypeFor } from '../services/staticService.js';
 
 const MAX_BODY_BYTES = 1024 * 1024;
@@ -179,6 +180,20 @@ export async function handleRequest(req, res) {
         throw new ValidationError('path 查询参数必填');
       }
       sendJson(res, 200, { success: true, data: { jobs: listJobsFor(projectPath) } });
+      return;
+    }
+    if (route === 'GET /projects/upgrade') {
+      const projectPath = url.searchParams.get('path');
+      if (!projectPath) {
+        throw new ValidationError('path 查询参数必填');
+      }
+      sendJson(res, 200, { success: true, data: await previewUpgrade(projectPath) });
+      return;
+    }
+    if (route === 'POST /projects/upgrade') {
+      const body = await readJsonBody(req);
+      const result = await applyUpgrade(body?.path, body?.resolutions);
+      sendJson(res, 200, { success: true, data: result });
       return;
     }
     if (route.startsWith('GET /airun/')) {

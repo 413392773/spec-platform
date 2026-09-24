@@ -3,9 +3,9 @@ import { spawn as nodeSpawn } from 'node:child_process';
 import { StringDecoder } from 'node:string_decoder';
 import { existsSync, realpathSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { isAbsolute, join, sep } from 'node:path';
+import { join, sep } from 'node:path';
 import { ValidationError, ConflictError } from '../lib/errors.js';
-import { readRecords } from '../lib/projectRecords.js';
+import { findRegisteredProject } from '../lib/projectLookup.js';
 
 /** aiRun 白名单 = openspec init 生成的 11 个 /opsx:* 斜杠命令（前端 AiPanel.OPSX_OPTIONS 与之对应） */
 export const OPSX_COMMANDS = new Set([
@@ -166,32 +166,13 @@ async function validateLaunch(projectPath, command, input) {
   if (typeof input !== 'string' || input.length > MAX_INPUT_CHARS) {
     throw new ValidationError(`input 必须是字符串且不超过 ${MAX_INPUT_CHARS} 字符`);
   }
-  if (typeof projectPath !== 'string' || !isAbsolute(projectPath)) {
-    throw new ValidationError('projectPath 必须是绝对路径');
-  }
-  let realPath;
-  try {
-    realPath = realpathSync(projectPath);
-  } catch {
-    throw new ValidationError(`项目路径不存在: ${projectPath}`);
-  }
+  const { realPath } = await findRegisteredProject(projectPath);
   if (!existsSync(join(realPath, 'openspec', 'config.yaml'))) {
     throw new ValidationError(`不是有效的 openspec 项目（缺少 openspec/config.yaml）: ${realPath}`);
   }
   const home = realpathSync(homedir());
   if (realPath === home || home.startsWith(realPath + sep)) {
     throw new ValidationError('不能把家目录或其祖先目录作为项目路径');
-  }
-  const records = await readRecords();
-  const registered = records.some((record) => {
-    try {
-      return realpathSync(record.path) === realPath;
-    } catch {
-      return false;
-    }
-  });
-  if (!registered) {
-    throw new ValidationError('项目未在平台登记：只有通过平台创建的项目才能使用 AI 工作流');
   }
   const runningJobs = [...jobs.values()].filter((job) => job.status === 'running');
   if (runningJobs.length >= MAX_CONCURRENT_JOBS) {

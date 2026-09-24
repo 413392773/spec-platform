@@ -14,7 +14,8 @@ import {
 import { run as runOpenspec } from './openspecService.js';
 
 // 与 web/src/validation.js 的 NAME_RE 保持一致：前端管即时提示，这里是权威校验
-const NAME_RE = /^[a-z0-9][a-z0-9-]*$/;
+// （export 供 upgradeService 复验备份目录名）
+export const NAME_RE = /^[a-z0-9][a-z0-9-]*$/;
 const INIT_TOOLS = 'claude';
 
 function validateForm(form) {
@@ -83,13 +84,15 @@ function buildContextText(ctx) {
   return `${lines.join('\n')}\n`;
 }
 
-/** 母本默认 rules + 项目特有 extraRules（追加式合并，不修改入参） */
-function mergeRules(masterRules, extraRules) {
+/** 母本默认 rules + 项目特有 extraRules（追加式合并，不修改入参）；upgradeService 复用 */
+export function mergeRules(masterRules, extraRules) {
   const merged = {};
   for (const [artifact, rules] of Object.entries(masterRules)) {
+    if (artifact === '__proto__') continue; // 防原型 setter 副作用
     merged[artifact] = [...rules];
   }
   for (const [artifact, rules] of Object.entries(extraRules)) {
+    if (artifact === '__proto__') continue;
     merged[artifact] = [...(merged[artifact] ?? []), ...rules];
   }
   return merged;

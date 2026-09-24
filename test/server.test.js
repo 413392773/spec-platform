@@ -175,3 +175,24 @@ test('GET /api/projects/airun 缺 path 参数 400；带 path 返回空列表', a
   const body = await ok.json();
   assert.deepEqual(body.data.jobs, []);
 });
+
+test('GET /api/projects/upgrade 缺 path 参数 400；未登记项目 400', async () => {
+  const bad = await fetch(`${base}/api/projects/upgrade`);
+  assert.equal(bad.status, 400);
+  const stranger = await fetch(
+    `${base}/api/projects/upgrade?path=${encodeURIComponent('/tmp')}`,
+  );
+  assert.equal(stranger.status, 400);
+  const body = await stranger.json();
+  assert.match(body.error, /未在平台登记/);
+});
+
+test('POST /api/projects/upgrade 未登记项目 400', async () => {
+  const res = await postJson('/api/projects/upgrade', {
+    path: '/tmp',
+    resolutions: {},
+  });
+  assert.equal(res.status, 400);
+  const body = await res.json();
+  assert.match(body.error, /未在平台登记/);
+});

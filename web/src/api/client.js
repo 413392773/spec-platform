@@ -89,3 +89,11 @@ export async function listAiRuns(path) {
   const data = await request(`/api/projects/airun?path=${encodeURIComponent(path)}`);
   return data.jobs;
 }
+
+export function previewUpgrade(path) {
+  return request(`/api/projects/upgrade?path=${encodeURIComponent(path)}`);
+}
+
+export function applyUpgrade(path, resolutions) {
+  return postJson('/api/projects/upgrade', { path, resolutions });
+}

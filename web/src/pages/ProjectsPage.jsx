@@ -3,9 +3,10 @@ import { listProjects } from '../api/client.js';
 import { useAsyncData } from '../hooks/useAsyncData.js';
 import RunPanel from '../components/RunPanel.jsx';
 import AiPanel from '../components/AiPanel.jsx';
+import UpgradePanel from '../components/UpgradePanel.jsx';
 
 export default function ProjectsPage() {
-  const { data: projects, error, isPending } = useAsyncData(listProjects);
+  const { data: projects, error, isPending, refresh } = useAsyncData(listProjects);
 
   return (
     <>
@@ -28,6 +29,7 @@ export default function ProjectsPage() {
             <p className="hint">{project.path}</p>
             <RunPanel projectPath={project.path} />
             <AiPanel projectPath={project.path} />
+            <UpgradePanel projectPath={project.path} onUpgraded={refresh} />
           </div>
         ))}
       </div>
